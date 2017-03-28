@@ -19,18 +19,20 @@ RUN apt-get -y update && \
         apache2 \
         libaprutil1-dbd-mysql
 
-ADD ./dav-server.conf /etc/apache2/sites-available/dav-server.conf
+ADD ./dav-site.conf /etc/apache2/sites-available/dav-server.conf
+ADD ./dav-conf.conf /etc/apache2/conf-available/dav-server.conf
 
 # Apache vhost config
 RUN mkdir -p /davserver/log && \
     mkdir -p /davserver/data/ && \
     chown -R www-data:www-data /davserver && \
     a2dissite 000-default default-ssl && \
+    a2enconf dav-server && \
     a2ensite dav-server && \
     a2dismod mpm_event && \
     a2enmod dbd authz_dbd authn_dbd mpm_prefork \
         alias auth_digest authn_core authn_file \
-        authz_core authz_user dav dav_fs setenvif && \
+        authz_core authz_user dav dav_fs setenvif rewrite && \
     update-rc.d -f apache2 remove
 
 EXPOSE 80
